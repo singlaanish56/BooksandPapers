@@ -10,5 +10,6 @@ func main(){
 	//sync.BasicCond()
 	//sync.BroadcastCond()
 	//sync.Onceonce()
-	sync.SimplePool()
+	//sync.SimplePool()
+	//sync.CalculatorPool()
 }

@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 )
 
 func main() {
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
 
 	//this one prints welcome, so salutation operates on the same memory as the main thread
 
@@ -15,7 +16,7 @@ func main() {
 
 	
 	// go func(){
-	// 	defer wg.Done()
+	// 	defer g.Done()
 	// 	salutation = "welcome"
 	// }()
 
@@ -49,4 +50,32 @@ func main() {
 	// 	}(salutation)
 	// }
 	// wg.Wait()
+
+
+	//-------------------------------------------------------------------------------------	
+	
+	//forever gor outines are not garbage collected by the goroutine runtime
+	// still takes 9kb of space in my system
+
+	// memConsumed := func() uint64 {
+	// 	runtime.GC()
+	// 	var s runtime.MemStats
+	// 	runtime.ReadMemStats(&s)
+	// 	return s.Sys
+	// }
+
+	// var c <-chan interface{}
+	// var wg  sync.WaitGroup
+	// noop := func(){wg.Done(); <-c}
+
+	// const numOfGORoutines = 1e4
+	// wg.Add(numOfGORoutines)
+	// before := memConsumed()
+	// for i:=numOfGORoutines;i>0;i--{
+	// 	go noop()
+	// }
+
+	// wg.Wait()
+	// after := memConsumed()
+	// fmt.Printf("%.3fkb",float64(after-before)/numOfGORoutines/1000)
 }

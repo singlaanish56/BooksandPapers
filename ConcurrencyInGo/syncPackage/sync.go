@@ -12,4 +12,8 @@ func main(){
 	//sync.Onceonce()
 	//sync.SimplePool()
 	//sync.CalculatorPool()
+	//sync.SimpleChannels()
+	//sync.ChannelBroadcast()
+	//sync.SimpleSelect()
+	sync.MultipleSelect()
 }

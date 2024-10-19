@@ -10,5 +10,9 @@ func main(){
 	//patterns.LexicalConfinement()
 	//patterns.LexicalConfinement2()
 	//patterns.LeakingRoutine()
-	patterns.PreventLeakGoroutine()
+	//patterns.PreventLeakGoroutine()
+	//patterns.SimpleErrorHandling()
+	//patterns.BetterErrorHandling()
+	//patterns.SimplePipelines()
+	patterns.ChannelPipelines()
 }

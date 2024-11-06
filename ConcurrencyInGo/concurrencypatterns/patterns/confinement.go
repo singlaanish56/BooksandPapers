@@ -67,7 +67,8 @@ func LexicalConfinement(){
 //altho channels are inherently thread safe
 //another way to use the lexical confinement for DS which is not a concurrent safe
 
-
+// in this case altho the printData function operats on different part of the data slice
+// but the data slice in itself is not thread safe, in this case the slice should rather be copied
 func LexicalConfinement2(){
 
 	printData := func(wg * sync.WaitGroup, data []byte){

@@ -14,5 +14,7 @@ func main(){
 	//patterns.SimpleErrorHandling()
 	//patterns.BetterErrorHandling()
 	//patterns.SimplePipelines()
-	patterns.ChannelPipelines()
+	//patterns.ChannelPipelines()
+	//patterns.NoFanOutWithPipeline()
+	patterns.FanOutWithPipeline()
 }

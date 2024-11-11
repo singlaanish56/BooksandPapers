@@ -1,6 +1,5 @@
 package timeoutsorcancellations
 
-import "golang.org/x/tools/go/analysis/passes/nilfunc"
 
 //now in this case the genration and the resultstream are perfectly handled by the done channels
 //so they cancelled properly
@@ -19,7 +18,7 @@ func cancelTheLongCancellation(){
 	case value = <-valuestream:
 	}
 
-	result := reallyLongCalculation(value)
+	result := reallyLongCalculation(done, value)
 
 	select{
 	case <-done:

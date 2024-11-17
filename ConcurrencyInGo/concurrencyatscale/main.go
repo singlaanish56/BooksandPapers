@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/singlaanish56/Books/ConcurrencyInGo/concurrencyatscale/heartbeat"
+	"github.com/singlaanish56/Books/ConcurrencyInGo/concurrencyatscale/ratelimiting"
 )
 
 func main(){
@@ -9,5 +9,9 @@ func main(){
 	// errorpropogation.RunErrorPropBetter()
 	//heartbeat.BasicHeartbeart()
 	//heartbeat.HeartbeartThatBreaks()
-	heartbeat.UnitWorkHeartbeat()
+	//heartbeat.UnitWorkHeartbeat()
+	//replicatedRequests.RunDoWork()
+	//ratelimiting.ClientSideNoRateLimiter()
+	//ratelimiting.ClientSideSingleRateLimiter()
+	ratelimiting.ClientSideMultiLimiter()
 }

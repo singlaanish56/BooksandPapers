@@ -1,4 +1,4 @@
-#notes #books #compititive #programming #introduction
+#notes #books #compititive #programming #ibasicTechinques
 
 
 # Sorting Algorithms
@@ -521,3 +521,60 @@ seg[ind]=seg[2*ind+1]+seg[2*ind+2];
 ```
 
 similar way to get the sum of the nodes after an update, we can check the lazy array for any pending updates, and hence use those updates+ propagates them further for the next queries
+
+# Bit Manipulation
+#bitManipulation
+
+unsigned int0 2^n -1
+signed int -2^n-1 to 2^n-1 -1
+
+## Bit Operations
+
+AND operation
+```
+x & 1 == 0 // even
+X & 1 == 1 // odd
+x & (2^k -1) ==0 // divisible by 2^k
+```
+
+OR operation a | b
+XOR operation a ^ b
+
+NOT operation
+```
+~x = -x-1
+```
+
+BIT shifts
+
+```
+left shift  x<<k , appends k 0 bits, or multiply by 2^k
+right shift x>>k  removes k 0 bits, o r divde by 2^k
+
+eg 14<<2=56
+14=1110
+56=111000
+```
+
+
+## Applications
+
+1. `x & (1<<k)` , checks if the kth bit of x is set or not
+2. `x | (1<<k)` , sets the kth bit in x to 1
+3. `x ^ (1<<k)`, flips the kth bit in x
+4. `x & ~(1<<k)`, set the kth bit to 0
+5. `x & (x-1)`  set the last 1  bit of x to 0
+	1. x = 7, 111 ; x-1 = 6, 110; result = 110
+	2. x=6, 110; x-1 = 5, 101; result = 100
+6. `x & -x`, sets all 1 bits to 0, except last 1 bit
+	1. x=7, 111 ; -x=000+1=001; result = 001
+	2. x=6, 110; x=001+1=010; result =010
+7. `x | (x-1)` inverts all bits after last 1 bit
+	1. x=7, 111; x-1=6, 110; result =111
+	2. x=6, 110; x-1 = 5, 101; result 111
+
+Built In Functions
+`__builtin_clz()` number of 0's at the beginning of the number
+`__builtin_ctz()` number of 0's at the end of the number
+`__builtin_popcount()` number of 1's in the number
+`__builtin_parity()` parity of number of 1's

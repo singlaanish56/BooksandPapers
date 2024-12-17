@@ -261,11 +261,11 @@ How to precompute properly
 sparse table help compute time to logarithmic, to cmpute for only power of 2
 and hence the precompute time is O(nlogn) and the query time is O(1)
 //for precompute
-![[../Images/Pasted image 20241209175339.png]]
+![Pasted Image](../Images/Pasted%20image%2020241209175339.png)
 
 
 //for query minimum
-![[../Images/Pasted image 20241209173716.png]]
+![Pasted Image](../Images/Pasted%20image%2020241209173716.png)
 
 so for the precomputation we compute it for 2^ (0->K), where k is the log2(length of the range)
 
@@ -334,7 +334,7 @@ in this case we compute the sum the for the power of 2
 
 https://www.youtube.com/watch?v=uSFzHCZ4E-8
 
-![[../Images/Pasted image 20241209185559.png]]
+![Pasted Image](../Images/Pasted%20image%2020241209185559.png)
 
 we compute the tree(its an array, called tree). we copy the same vale if 0th is set to 1,
 otherwise for every other set bit we sum 26 elements
@@ -345,7 +345,7 @@ for examples 00010, has 2 elements
 
 How to find the sum at index i ?
 we keep on flipping the last bit to get the information stored in the already computed previous Tree Array
-![[../Images/Pasted image 20241209190507.png]]
+![Pasted Image](../Images/Pasted%20image%2020241209190507.png)
 ```cpp
 //to find the sum at a particular index
 
@@ -406,7 +406,7 @@ segment trees is sort of a beefy version of the fenwick tree, takes 2n storage s
 But calculates all the range queries in logn, including sum / maximum / minimum.
 
 It constructs a tree out of of every two indexes, propogating it upwards
-![[../Images/Pasted image 20241210152630.png]]
+![Pasted Image](../Images/Pasted%20image%2020241210152630.png)
 
 
 How to construct the array space - O(2n) , time :- O(n)

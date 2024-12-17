@@ -123,15 +123,15 @@ hence we construct a array with 3 values in each node
 node id, subtree size,  node value
 
 
-![[../Images/Pasted image 20241216172211.png]]
+![Pasted Image](../Images/Pasted%20image%2020241216172211.png)
 
 here we calculate sum of subtree of node 4
 
-![[../Images/Pasted image 20241216172233.png]]
+![Pasted Image](../Images/Pasted%20image%2020241216172233.png)
 
 
 Similarly we can get the path sum using the similar approach, where each path sum we keep on adding each node while we dfs
-![[../Images/Pasted image 20241216172520.png]]
+![Pasted Image](../Images/Pasted%20image%2020241216172520.png)
 
 ### Lowest Common Ancestor
 
@@ -177,9 +177,9 @@ int lca(int nodeA, int nodeB){
 
 #### Method 3 - Tree Traversal / Euler  Tour Technique
 
-![[../Images/Pasted image 20241216183615.png]]
+![Pasted Image](../Images/Pasted%20image%2020241216183615.png)
 
-![[../Images/Pasted image 20241216183631.png]]
+![Pasted Image](../Images/Pasted%20image%2020241216183631.png)
 
 here while dfs, we add node every time, we come across it in the dfs.
 (while going in depth and coming back up)

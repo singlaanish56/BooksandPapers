@@ -10,6 +10,7 @@ type Process struct {
 	ID           int
 	Clock        int
 	RequestQueue chan Message
+	ProcessMutex  sync.Mutex 
 }
 
 func NewProcess(id int, msgChan chan Message) *Process {
@@ -31,27 +32,29 @@ func (p *Process) Run(wg *sync.WaitGroup) {
 	}
 }
 
-func (p *Process) incrementClock() {
-	p.Clock += rand.Intn(3)
-}
+func (p *Process) SendMessage(to *Process, content string) {
+	p.ProcessMutex.Lock()
+	defer p.ProcessMutex.Unlock()
 
-func (p *Process) SendMessage(to int, content string) {
-	p.incrementClock()
+	p.Clock += rand.Intn(3)
+
 	m := Message{
 		From:      p.ID,
-		To:        to,
+		To:        to.ID,
 		Timestamp: p.Clock,
 		Content:   content,
 	}
 
-	p.RequestQueue <- m
-	fmt.Printf("[Send] P%d -> P%d | Time: %d | Content: %s\n", p.ID, to, p.Clock, content)
+	to.RequestQueue <- m
+	fmt.Printf("[Send] P%d -> P%d | Time: %d | Content: %s\n", p.ID, to.ID, p.Clock, content)
 
 }
 
 func (p *Process) RecieveMessage(msg Message) {
+	p.ProcessMutex.Lock()
+	defer p.ProcessMutex.Unlock()
 	p.Clock = max(p.Clock, msg.Timestamp) + 1
-	fmt.Printf("[Recieve] P%d | Time: %d | Content: %s\n", p.ID, p.Clock, msg.Content)
+	fmt.Printf("[Recieve] P%d from P%d | Time: %d | Content: %s\n", p.ID, msg.From, p.Clock, msg.Content)
 }
 
 func max(a, b int) int {

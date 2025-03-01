@@ -41,3 +41,32 @@ The total ordering id defined through the =>.
 so the updated condition for total ordering and the clcok condition ensure implies that if <b> a ->b then a=> b </b>
 
 
+## Sample message from code run
+
+```
+[Send] P1 -> P0 | Time: 1 | Content: Message From process 1
+[Recieve] P0 from P1 | Time: 2 | Content: Message From process 1
+[Send] P2 -> P1 | Time: 1 | Content: Message From process 2
+[Recieve] P1 from P2 | Time: 2 | Content: Message From process 2
+[Send] P0 -> P2 | Time: 2 | Content: Message From process 0
+[Recieve] P2 from P0 | Time: 3 | Content: Message From process 0
+[Send] P0 -> P2 | Time: 3 | Content: Message From process 0
+[Recieve] P2 from P0 | Time: 4 | Content: Message From process 0
+[Send] P1 -> P0 | Time: 4 | Content: Message From process 1
+[Recieve] P0 from P1 | Time: 5 | Content: Message From process 1
+[Send] P0 -> P2 | Time: 5 | Content: Message From process 0
+[Recieve] P2 from P0 | Time: 6 | Content: Message From process 0
+[Send] P2 -> P1 | Time: 6 | Content: Message From process 2
+[Recieve] P1 from P2 | Time: 7 | Content: Message From process 2
+[Send] P0 -> P2 | Time: 6 | Content: Message From process 0
+[Recieve] P2 from P0 | Time: 7 | Content: Message From process 0
+[Send] P0 -> P2 | Time: 6 | Content: Message From process 0
+[Recieve] P2 from P0 | Time: 8 | Content: Message From process 0
+[Send] P0 -> P2 | Time: 7 | Content: Message From process 0
+[Recieve] P2 from P0 | Time: 9 | Content: Message From process 0
+The clock for all the processes
+P0 | Time 7
+P1 | Time 7
+P2 | Time 9
+
+```

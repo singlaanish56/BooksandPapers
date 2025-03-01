@@ -10,31 +10,37 @@ import (
 )
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-	numProcess := 5
-	runFor := 20
+	numProcess := 3
+	runFor := 10
 
 	var wg sync.WaitGroup
 
 	processes := make([]*pkg.Process, numProcess)
-	messageChannel := make(chan pkg.Message, 100)
+	messageChannels := make([]chan pkg.Message, numProcess)
 
 	for i := 0; i < numProcess; i++ {
-		processes[i] = pkg.NewProcess(i, messageChannel)
+		messageChannels[i]= make(chan pkg.Message, 1000)
+		processes[i] = pkg.NewProcess(i, messageChannels[i])
 		wg.Add(1)
 		go processes[i].Run(&wg)
 	}
 
 	for runFor > 0 {
 		time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
-		sender := processes[rand.Intn(numProcess)]
+		senderId := rand.Intn(numProcess)
 		receiverId := rand.Intn(numProcess)
-		content := fmt.Sprintf("Message From process %d" ,sender.ID)
-		sender.SendMessage(receiverId, content)
+		for receiverId==senderId{
+			receiverId = rand.Intn(numProcess)
+		}
+		content := fmt.Sprintf("Message From process %d" ,senderId)
+		processes[senderId].SendMessage(processes[receiverId], content)
 		runFor--
 	}
 
-	close(messageChannel)
+	for i:=0;i<numProcess;i++{
+		close(messageChannels[i])
+	}
+
 	wg.Wait()
 
 	fmt.Println("The clock for all the processes")

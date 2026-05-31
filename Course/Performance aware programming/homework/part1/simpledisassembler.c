@@ -85,15 +85,29 @@ void reg_to_reg(unsigned char byte1, FILE* file) {
                 }
         
                 if (d) {
-                    printf("mov %s, [%s + %d]\n",
-                        reg_table[reg_index],
-                        r_m_encoding[r_m],
-                        displ);
+                    if (displ >= 0) {
+                        printf("mov %s, [%s + %d]\n",
+                            reg_table[reg_index],
+                            r_m_encoding[r_m],
+                            displ);
+                    } else {
+                        printf("mov %s, [%s - %d]\n",
+                            reg_table[reg_index],
+                            r_m_encoding[r_m],
+                            -displ);
+                    }
                 } else {
-                    printf("mov [%s + %d], %s\n",
-                        r_m_encoding[r_m],
-                        displ,
-                        reg_table[reg_index]);
+                    if (displ >= 0) {
+                        printf("mov [%s + %d], %s\n",
+                            r_m_encoding[r_m],
+                            displ,
+                            reg_table[reg_index]);
+                    } else {
+                        printf("mov [%s - %d], %s\n",
+                            r_m_encoding[r_m],
+                            -displ,
+                            reg_table[reg_index]);
+                    }
                 }
 
             break;
@@ -150,8 +164,167 @@ void imd_to_reg(unsigned char byte1,  FILE* file) {
     printf("mov %s, %d\n", reg_table[reg_index], imd);
 }
 
-void reg_to_mem(unsigned char byte1, FILE* file) {
+void imd_to_mem(unsigned char byte1, FILE* file) {
+
+    unsigned char w = byte1 & 1;
+
+    unsigned char byte2;
+    if (fread(&byte2, 1, 1, file) != 1) {
+        printf("failed to read modrm\n");
+        return;
+    }
+
+    unsigned char mod = (byte2 >> 6);
+    unsigned char r_m = byte2 & 0b111;
+
+    int displacement = 0;
+
+    switch (mod) {
+
+        case 0b00:
+
+            if (r_m == 0b110) {
+                displacement = get_two_displacement_address(file);
+            }
+
+            break;
+
+        case 0b01: {
+
+            int8_t displ;
+
+            if (fread(&displ, 1, 1, file) != 1) {
+                printf("failed to read displacement\n");
+                return;
+            }
+
+            displacement = displ;
+            break;
+        }
+
+        case 0b10:
+
+            displacement = get_two_displacement_address(file);
+            break;
+
+        default:
+            printf("unsupported mod in immediate-to-memory: %d\n", mod);
+            return;
+    }
+
+    int immediate;
+
+    if (w) {
+
+        unsigned short imd = get_two_displacement_address(file);
+        immediate = imd;
+
+    } else {
+
+        uint8_t imd;
+
+        if (fread(&imd, 1, 1, file) != 1) {
+            printf("failed to read immediate\n");
+            return;
+        }
+
+        immediate = imd;
+    }
+
+    switch (mod) {
+
+        case 0b00:
+
+            if (r_m == 0b110) {
+
+                printf("mov [%d], %s %d\n",
+                       displacement,
+                       w ? "word" : "byte",
+                       immediate);
+
+            } else {
+
+                printf("mov [%s], %s %d\n",
+                       r_m_encoding[r_m],
+                       w ? "word" : "byte",
+                       immediate);
+            }
+
+            break;
+
+        case 0b01:
+
+            if (displacement >= 0) {
+
+                printf("mov [%s + %d], %s %d\n",
+                       r_m_encoding[r_m],
+                       displacement,
+                       w ? "word" : "byte",
+                       immediate);
+
+            } else {
+
+                printf("mov [%s - %d], %s %d\n",
+                       r_m_encoding[r_m],
+                       -displacement,
+                       w ? "word" : "byte",
+                       immediate);
+            }
+
+            break;
+
+        case 0b10:
+
+            if (displacement >= 0) {
+
+                printf("mov [%s + %d], %s %d\n",
+                       r_m_encoding[r_m],
+                       displacement,
+                       w ? "word" : "byte",
+                       immediate);
+
+            } else {
+
+                printf("mov [%s - %d], %s %d\n",
+                       r_m_encoding[r_m],
+                       -displacement,
+                       w ? "word" : "byte",
+                       immediate);
+            }
+
+            break;
+    }
+}
+
+void acc_and_mem(unsigned char byte1, FILE* file) {
+
+    unsigned char d = (byte1 >> 1) &1;
+    unsigned char w = byte1 & 1;
+
+    unsigned char byte2;
     
+    if (fread(&byte2, 1, 1, file) != 1) {
+        printf("failed to read byte2\n");
+        return;
+    }
+
+    unsigned short memory = byte2;
+
+    if (w) {
+        unsigned char byte3;
+    
+        if (fread(&byte3, 1, 1, file) != 1) {
+            printf("failed to read byte3\n");
+            return;
+        }   
+        memory |= (byte3 << 8);
+    }
+    
+    if(d){
+        printf("mov [%d], ax\n", memory);
+    } else {
+        printf("mov ax, [%d]\n", memory);
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -180,7 +353,10 @@ int main(int argc, char *argv[]) {
                 imd_to_reg(byte1, file);
                 break;
             case 0b1100:
-                reg_to_mem(byte1, file);
+                imd_to_mem(byte1, file);
+                break;
+            case 0b1010:
+                acc_and_mem(byte1, file);
                 break;
             default:
                 printf("unsupported opcode: %d\n", opcode);

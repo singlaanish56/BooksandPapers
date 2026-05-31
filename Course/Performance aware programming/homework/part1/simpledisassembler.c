@@ -25,7 +25,9 @@ short get_two_displacement_address(FILE* file) {
     }
 
     unsigned short address = low | (high << 8);
+    return address;
 }
+
 
 void reg_to_reg(unsigned char byte1, FILE* file) {
     unsigned char byte2;

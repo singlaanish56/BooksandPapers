@@ -393,6 +393,35 @@ void acc_and_mem(const char * mnemonic,unsigned char byte1, FILE* file) {
     }
 }
 
+void acc_immediate(const char *mnemonic, unsigned char byte1, FILE *file) {
+
+    unsigned char w = byte1 & 1;
+
+    int immediate;
+
+    if (w) {
+
+        int16_t imd = get_two_displacement_address(file);
+        immediate = imd;
+
+    } else {
+
+        int8_t imd;
+
+        if (fread(&imd, 1, 1, file) != 1) {
+            printf("failed to read immediate\n");
+            return;
+        }
+
+        immediate = imd;
+    }
+
+    printf("%s %s, %d\n",
+           mnemonic,
+           w ? "ax" : "al",
+           immediate);
+}
+
 int main(int argc, char *argv[]) {
 
 
@@ -409,8 +438,21 @@ int main(int argc, char *argv[]) {
     printf("%s\n\n", "bits 16");
     while (fread(&byte1, 1, 1, file)) {
 
+        if ((byte1 >> 1) == 0b0000010) {
+            acc_immediate("add", byte1, file);
+            continue;
+        }
         
-        if ((byte1 >> 2) == 0b100010){
+        else if ((byte1 >> 1) == 0b0010110) {
+            acc_immediate("sub", byte1, file);
+            continue;
+        }
+        
+        else if ((byte1 >> 1) == 0b0011110) {
+            acc_immediate("cmp", byte1, file);
+            continue;
+        }
+        else if ((byte1 >> 2) == 0b100010){
             reg_to_reg("mov",byte1, file);
             continue;
         }else if ((byte1 >>2)== 0b000000){

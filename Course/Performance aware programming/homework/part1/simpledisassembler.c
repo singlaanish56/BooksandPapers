@@ -1,6 +1,8 @@
+#include <complex.h>
 #include <stdio.h>
 #include <stdint.h>
-
+#include <stdnoreturn.h>
+#include <string.h>
 const char *reg_table[] = {
     "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh",
     "ax", "cx", "dx", "bx", "sp", "bp", "si", "di"
@@ -29,7 +31,8 @@ short get_two_displacement_address(FILE* file) {
 }
 
 
-void reg_to_reg(unsigned char byte1, FILE* file) {
+void reg_to_reg(const char* mnemonic,unsigned char byte1, FILE* file) {
+    
     unsigned char byte2;
 
     if (fread(&byte2, 1, 1, file) != 1) {
@@ -48,28 +51,28 @@ void reg_to_reg(unsigned char byte1, FILE* file) {
     switch (mod){
         case 0b11: {
             if (d) {
-                printf("mov %s, %s\n", reg_table[reg_index], reg_table[r_m_index]);
+                printf("%s %s, %s\n",mnemonic, reg_table[reg_index], reg_table[r_m_index]);
             } else {
-                printf("mov %s, %s\n", reg_table[r_m_index], reg_table[reg_index]);
+                printf("%s %s, %s\n",mnemonic, reg_table[r_m_index], reg_table[reg_index]);
             }
             break;
         }
         case 0b00: {
             if(r_m!=0b110){
                 if (d) {
-                    printf("mov %s,[%s]\n", reg_table[reg_index], r_m_encoding[r_m]);
+                    printf("%s %s,[%s]\n",mnemonic, reg_table[reg_index], r_m_encoding[r_m]);
                 } else {
-                    printf("mov [%s], %s\n", r_m_encoding[r_m], reg_table[reg_index]);
+                    printf("%s [%s], %s\n",mnemonic, r_m_encoding[r_m], reg_table[reg_index]);
                 }
             } else {
 
                 unsigned short address = get_two_displacement_address(file);
                 if (d) {
-                    printf("mov %s, [%d]\n",
+                    printf("%s %s, [%d]\n",mnemonic,
                            reg_table[reg_index],
                            address);
                 } else {
-                    printf("mov [%d], %s\n",
+                    printf("%s [%d], %s\n",mnemonic,
                            address,
                            reg_table[reg_index]);
                 }
@@ -86,24 +89,24 @@ void reg_to_reg(unsigned char byte1, FILE* file) {
         
                 if (d) {
                     if (displ >= 0) {
-                        printf("mov %s, [%s + %d]\n",
+                        printf("%s %s, [%s + %d]\n",mnemonic,
                             reg_table[reg_index],
                             r_m_encoding[r_m],
                             displ);
                     } else {
-                        printf("mov %s, [%s - %d]\n",
+                        printf("%s %s, [%s - %d]\n",mnemonic,
                             reg_table[reg_index],
                             r_m_encoding[r_m],
                             -displ);
                     }
                 } else {
                     if (displ >= 0) {
-                        printf("mov [%s + %d], %s\n",
+                        printf("%s [%s + %d], %s\n",mnemonic,
                             r_m_encoding[r_m],
                             displ,
                             reg_table[reg_index]);
                     } else {
-                        printf("mov [%s - %d], %s\n",
+                        printf("%s [%s - %d], %s\n",mnemonic,
                             r_m_encoding[r_m],
                             -displ,
                             reg_table[reg_index]);
@@ -117,12 +120,12 @@ void reg_to_reg(unsigned char byte1, FILE* file) {
                 int16_t displ = get_two_displacement_address(file);
         
                 if (d) {
-                    printf("mov %s, [%s + %d]\n",
+                    printf("%s %s, [%s + %d]\n",mnemonic,
                         reg_table[reg_index],
                         r_m_encoding[r_m],
                         displ);
                 } else {
-                    printf("mov [%s + %d], %s\n",
+                    printf("%s [%s + %d], %s\n",mnemonic,
                         r_m_encoding[r_m],
                         displ,
                         reg_table[reg_index]);
@@ -137,7 +140,7 @@ void reg_to_reg(unsigned char byte1, FILE* file) {
     
 }
 
-void imd_to_reg(unsigned char byte1,  FILE* file) {
+void imd_to_reg(const char * mnemonic,unsigned char byte1,  FILE* file) {
     unsigned char byte2;
 
     if (fread(&byte2, 1, 1, file) != 1) {
@@ -161,18 +164,12 @@ void imd_to_reg(unsigned char byte1,  FILE* file) {
         imd |= (byte3 << 8);
     }
     
-    printf("mov %s, %d\n", reg_table[reg_index], imd);
+    printf("%s %s, %d\n", mnemonic, reg_table[reg_index], imd);
 }
 
-void imd_to_mem(unsigned char byte1, FILE* file) {
+void imd_to_mem(const char * mnemonic,unsigned char byte1, unsigned char byte2, FILE* file) {
 
     unsigned char w = byte1 & 1;
-
-    unsigned char byte2;
-    if (fread(&byte2, 1, 1, file) != 1) {
-        printf("failed to read modrm\n");
-        return;
-    }
 
     unsigned char mod = (byte2 >> 6);
     unsigned char r_m = byte2 & 0b111;
@@ -206,29 +203,99 @@ void imd_to_mem(unsigned char byte1, FILE* file) {
 
             displacement = get_two_displacement_address(file);
             break;
-
+        case 0b11: {
+            
+            int use_sign_extension =
+                strcmp(mnemonic, "add") == 0 ||
+                strcmp(mnemonic, "sub") == 0 ||
+                strcmp(mnemonic, "cmp") == 0;
+            
+            unsigned char s = use_sign_extension ? ((byte1 >> 1) & 1) : 0;
+                unsigned char reg_index = r_m + (w * 8);
+            
+                int immediate;
+            
+                if (w == 0) {
+            
+                    int8_t imd;
+            
+                    if (fread(&imd, 1, 1, file) != 1) {
+                        printf("failed to read immediate\n");
+                        return;
+                    }
+            
+                    immediate = imd;
+            
+                } else {
+            
+                    if (s == 1) {
+            
+                        int8_t imd;
+            
+                        if (fread(&imd, 1, 1, file) != 1) {
+                            printf("failed to read immediate\n");
+                            return;
+                        }
+            
+                        immediate = imd;
+            
+                    } else {
+            
+                        int16_t imd = get_two_displacement_address(file);
+                        immediate = imd;
+                    }
+                }
+            
+                printf("%s %s, %d\n",
+                       mnemonic,
+                       reg_table[reg_index],
+                       immediate);
+            
+                return;
+            }
         default:
             printf("unsupported mod in immediate-to-memory: %d\n", mod);
             return;
     }
 
+    int use_sign_extension =
+        strcmp(mnemonic, "add") == 0 ||
+        strcmp(mnemonic, "sub") == 0 ||
+        strcmp(mnemonic, "cmp") == 0;
+    
+    unsigned char s = use_sign_extension ? ((byte1 >> 1) & 1) : 0;
+    
     int immediate;
-
-    if (w) {
-
-        unsigned short imd = get_two_displacement_address(file);
-        immediate = imd;
-
-    } else {
-
-        uint8_t imd;
-
+    
+    if (w == 0) {
+    
+        int8_t imd;
+    
         if (fread(&imd, 1, 1, file) != 1) {
             printf("failed to read immediate\n");
             return;
         }
-
+    
         immediate = imd;
+    
+    } else {
+    
+        if (s == 1) {
+    
+            int8_t imd;
+    
+            if (fread(&imd, 1, 1, file) != 1) {
+                printf("failed to read immediate\n");
+                return;
+            }
+    
+            immediate = imd;
+    
+        } else {
+    
+            int16_t imd = get_two_displacement_address(file);
+            immediate = imd;
+        }
     }
 
     switch (mod) {
@@ -237,14 +304,14 @@ void imd_to_mem(unsigned char byte1, FILE* file) {
 
             if (r_m == 0b110) {
 
-                printf("mov [%d], %s %d\n",
+                printf("%s [%d], %s %d\n",mnemonic,
                        displacement,
                        w ? "word" : "byte",
                        immediate);
 
             } else {
 
-                printf("mov [%s], %s %d\n",
+                printf("%s [%s], %s %d\n",mnemonic,
                        r_m_encoding[r_m],
                        w ? "word" : "byte",
                        immediate);
@@ -256,7 +323,7 @@ void imd_to_mem(unsigned char byte1, FILE* file) {
 
             if (displacement >= 0) {
 
-                printf("mov [%s + %d], %s %d\n",
+                printf("%s [%s + %d], %s %d\n",mnemonic,
                        r_m_encoding[r_m],
                        displacement,
                        w ? "word" : "byte",
@@ -264,7 +331,7 @@ void imd_to_mem(unsigned char byte1, FILE* file) {
 
             } else {
 
-                printf("mov [%s - %d], %s %d\n",
+                printf("%s [%s - %d], %s %d\n",mnemonic,
                        r_m_encoding[r_m],
                        -displacement,
                        w ? "word" : "byte",
@@ -277,7 +344,7 @@ void imd_to_mem(unsigned char byte1, FILE* file) {
 
             if (displacement >= 0) {
 
-                printf("mov [%s + %d], %s %d\n",
+                printf("%s [%s + %d], %s %d\n",mnemonic,
                        r_m_encoding[r_m],
                        displacement,
                        w ? "word" : "byte",
@@ -285,7 +352,7 @@ void imd_to_mem(unsigned char byte1, FILE* file) {
 
             } else {
 
-                printf("mov [%s - %d], %s %d\n",
+                printf("%s [%s - %d], %s %d\n",mnemonic,
                        r_m_encoding[r_m],
                        -displacement,
                        w ? "word" : "byte",
@@ -296,11 +363,10 @@ void imd_to_mem(unsigned char byte1, FILE* file) {
     }
 }
 
-void acc_and_mem(unsigned char byte1, FILE* file) {
+void acc_and_mem(const char * mnemonic,unsigned char byte1, FILE* file) {
 
     unsigned char d = (byte1 >> 1) &1;
     unsigned char w = byte1 & 1;
-
     unsigned char byte2;
     
     if (fread(&byte2, 1, 1, file) != 1) {
@@ -309,7 +375,7 @@ void acc_and_mem(unsigned char byte1, FILE* file) {
     }
 
     unsigned short memory = byte2;
-
+    
     if (w) {
         unsigned char byte3;
     
@@ -321,9 +387,9 @@ void acc_and_mem(unsigned char byte1, FILE* file) {
     }
     
     if(d){
-        printf("mov [%d], ax\n", memory);
+        printf("%s [%d], %s\n",mnemonic, memory, reg_table[w*8]);
     } else {
-        printf("mov ax, [%d]\n", memory);
+        printf("%s %s, [%d]\n",mnemonic, reg_table[w*8], memory);
     }
 }
 
@@ -343,20 +409,47 @@ int main(int argc, char *argv[]) {
     printf("%s\n\n", "bits 16");
     while (fread(&byte1, 1, 1, file)) {
 
-        unsigned char opcode = (byte1 >> 4);
+        
+        if ((byte1 >> 2) == 0b100010){
+            reg_to_reg("mov",byte1, file);
+            continue;
+        }else if ((byte1 >>2)== 0b000000){
+            reg_to_reg("add",byte1, file);
+            continue;
+        }
+        else if ((byte1 >> 2)== 0b001010) {
+            reg_to_reg("sub",byte1, file);
+            continue;
+        }else if ((byte1 >> 2) == 0b001110) {
+            reg_to_reg("cmp",byte1, file);
+            continue;
+        }else if ((byte1 >> 2) == 0b100000) {
+            unsigned char byte2;
+            if (fread(&byte2, 1, 1, file) != 1) {
+                printf("failed to read modrm\n");
+                return 0;
+            }
+            unsigned char reg = (byte2>>3) & 0b111;
+            imd_to_mem(reg==0b000?"add":(reg==0b111?"cmp":"sub"),byte1,byte2, file);
+            continue;
+        }
 
+        unsigned char opcode = (byte1 >> 4);
+        
         switch (opcode) {
-            case 0b1000:
-                reg_to_reg(byte1, file);
-                break;
             case 0b1011:
-                imd_to_reg(byte1, file);
+                imd_to_reg("mov",byte1, file);
                 break;
             case 0b1100:
-                imd_to_mem(byte1, file);
+                unsigned char byte2;
+                if (fread(&byte2, 1, 1, file) != 1) {
+                    printf("failed to read modrm\n");
+                    return 0;
+                }
+                imd_to_mem("mov",byte1,byte2, file);
                 break;
             case 0b1010:
-                acc_and_mem(byte1, file);
+                acc_and_mem("mov",byte1, file);
                 break;
             default:
                 printf("unsupported opcode: %d\n", opcode);

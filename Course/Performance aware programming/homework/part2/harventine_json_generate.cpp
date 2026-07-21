@@ -55,23 +55,15 @@ static f64 ReferenceHaversine(f64 X0, f64 Y0, f64 X1, f64 Y1, f64 EarthRadius)
 }
 /* End Casey's Code */
 
-double RandomRange(std::mt19937* gen, double min, double max) {
-    std::uniform_real_distribution<double> dist(min, max);
-    return dist(*gen);
+double RandomRange(std::mt19937& gen,std::uniform_real_distribution<double>& dist, double min, double max) {
+    dist.param(std::uniform_real_distribution<double>::param_type(min, max));
+    return dist(gen);
 }
 
-double min(double a, double b) {
-    return (a < b) ? a : b;
-}
-
-double max(double a, double b) {
-    return (a > b) ? a : b;
-}
-
-double uniform_generate(int seed, int numberOfPoints){
+double uniform_generate(int seed, int numberOfPoints, FILE * outFile, FILE * outFile2){
 
     std::mt19937 gen(seed);
-
+    std::uniform_real_distribution<double> dist;
     long double maxX=180;
     long double maxY=90;
     
@@ -79,47 +71,46 @@ double uniform_generate(int seed, int numberOfPoints){
     double mul = 1/(double)numberOfPoints;
     
 
-    std::ofstream outFile("points.json");
-    std::ofstream outFile2("harvestineans.txt");
-    
-    outFile << std::fixed << std::setprecision(16);
-    outFile2 << std::fixed << std::setprecision(16);
-    
-    outFile << "{" << std::endl;
-    outFile << "\"pairs\": [" << std::endl;
+    fprintf(outFile,
+    "{\n"
+    "\"pairs\": [\n");
     
     for(int i = 0; i < numberOfPoints; i++){
-        double x0 = RandomRange(&gen, -maxX, maxX);
-        double x1 = RandomRange(&gen, -maxX, maxX);
-        double y0 = RandomRange(&gen, -maxY, maxY);
-        double y1 = RandomRange(&gen, -maxY, maxY);
+        double x0 = RandomRange(gen, dist, -maxX, maxX);
+        double x1 = RandomRange(gen, dist, -maxX, maxX);
+        double y0 = RandomRange(gen, dist, -maxY, maxY);
+        double y1 = RandomRange(gen, dist, -maxY, maxY);
 
         
         double earthRadius = 6372.8;
-        double harvestineDistance = ReferenceHaversine(x0, y0, x1, y1, earthRadius);
-        sum+=(mul*harvestineDistance);
-        outFile2 << harvestineDistance << std::endl;
+        double haversineDistance = ReferenceHaversine(x0, y0, x1, y1, earthRadius);
+        sum+=(mul*haversineDistance);
+        fprintf(outFile2, "%.16f\n", haversineDistance);
         
-        if(i==numberOfPoints-1)
-            outFile << "{" <<"\"x0\": " << x0 << ",\"y0\": " << y0<< ",\"x1\": " << x1<< ",\"y1\": " << y1 << "}" << std::endl;
-        else
-            outFile << "{" <<"\"x0\": " << x0 << ",\"y0\": " << y0<< ",\"x1\": " << x1<< ",\"y1\": " << y1 << "}," << std::endl;
+        fprintf(outFile,
+                "{\"x0\": %.16f,\"y0\": %.16f,\"x1\": %.16f,\"y1\": %.16f}%s\n",
+                x0,
+                y0,
+                x1,
+                y1,
+                (i == numberOfPoints - 1) ? "" : ",");
     }
     
-    outFile << "]" << std::endl;
-    outFile << "}" << std::endl;
+    fprintf(outFile,
+    "]\n"
+    "}\n");
     
-    outFile.close();
-    outFile2.close();
+    fclose(outFile);
+    fclose(outFile2);
 
     return sum;
 }
 
 
 
-double cluster_generate(int seed, int numberOfPoints){
+double cluster_generate(int seed, int numberOfPoints, FILE * outFile, FILE * outFile2){
     std::mt19937 gen(seed);
-
+    std::uniform_real_distribution<double> dist;
     int numberofClusters = 1 + (numberOfPoints / 64);
     long double centerx = 0;
     long double centery = 0;
@@ -129,50 +120,48 @@ double cluster_generate(int seed, int numberOfPoints){
     long double maxY=90;
     double sum=0;
     double mul = 1/(double)numberOfPoints;
-    
     int currentCluster = numberofClusters;
-    std::ofstream outFile("points.json");
-    std::ofstream outFile2("harvestineans.txt");
-
-    outFile << std::fixed << std::setprecision(16);
-    outFile2 << std::fixed << std::setprecision(16);
     
-    outFile << "{" << std::endl;
-    outFile << "\"pairs\": [" << std::endl;
+    fprintf(outFile,
+    "{\n"
+    "\"pairs\": [\n");
     
     for(int i = 0; i < numberOfPoints; i++){
 
         if(currentCluster--==0){
-            centerx = RandomRange(&gen, -maxX, maxX);
-            centery = RandomRange(&gen, -maxY, maxY);
-            radiusx = RandomRange(&gen, 0, maxX);
-            radiusy = RandomRange(&gen, 0, maxY);
+            centerx = RandomRange(gen, dist, -maxX, maxX);
+            centery = RandomRange(gen, dist, -maxY, maxY);
+            radiusx = RandomRange(gen, dist, 0, maxX);
+            radiusy = RandomRange(gen, dist, 0, maxY);
             currentCluster = numberofClusters;
         }
 
-        double x0 = RandomRange(&gen, max(centerx-radiusx, -maxX), min(centerx+radiusx, maxX));
-        double y0 = RandomRange(&gen, max(centery-radiusy, -maxY), min(centery+radiusy, maxY));
+        double x0 = RandomRange(gen, dist, std::max(centerx-radiusx, -maxX), std::min(centerx+radiusx, maxX));
+        double y0 = RandomRange(gen, dist, std::max(centery-radiusy, -maxY), std::min(centery+radiusy, maxY));
 
-        double x1 = RandomRange(&gen, max(centerx-radiusx, -maxX), min(centerx+radiusx, maxX));
-        double y1 = RandomRange(&gen, max(centery-radiusy, -maxY), min(centery+radiusy, maxY));
+        double x1 = RandomRange(gen, dist, std::max(centerx-radiusx, -maxX), std::min(centerx+radiusx, maxX));
+        double y1 = RandomRange(gen, dist, std::max(centery-radiusy, -maxY), std::min(centery+radiusy, maxY));
         
         double earthRadius = 6372.8;
-        double harvestineDistance = ReferenceHaversine(x0, y0, x1, y1, earthRadius);
-        sum+=(mul*harvestineDistance);
-        outFile2 << harvestineDistance << std::endl;
+        double haversineDistance = ReferenceHaversine(x0, y0, x1, y1, earthRadius);
+        sum+=(mul*haversineDistance);
+        fprintf(outFile2, "%.16f\n", haversineDistance);
         
-        if (i==numberOfPoints-1) {
-            outFile << "{" <<"\"x0\": " << x0 << ",\"y0\": " << y0<< ",\"x1\": " << x1<< ",\"y1\": " << y1 << "}" << std::endl;
-        } else {
-            outFile << "{" <<"\"x0\": " << x0 << ",\"y0\": " << y0<< ",\"x1\": " << x1<< ",\"y1\": " << y1 << "}," << std::endl;
-        }
+        fprintf(outFile,
+                "{\"x0\": %.16f,\"y0\": %.16f,\"x1\": %.16f,\"y1\": %.16f}%s\n",
+                x0,
+                y0,
+                x1,
+                y1,
+                (i == numberOfPoints - 1) ? "" : ",");
     }
     
-    outFile << "]" << std::endl;
-    outFile << "}" << std::endl;
+    fprintf(outFile,
+    "]\n"
+    "}\n");
     
-    outFile.close();
-    outFile2.close();
+    fclose(outFile);
+    fclose(outFile2);
     return sum;
 }
 
@@ -189,11 +178,21 @@ int main(int argc, char* argv[])
     long numberOfPoints = std::stol(argv[3]);
 
     double sum = 0;
+
+    FILE* outFile = fopen("points.json", "wb");
+    FILE* outFile2 = fopen("haversines.txt", "wb");
+    
+    if (!outFile || !outFile2)
+    {
+        std::cerr << "Unable to open output files\n";
+        return 0;
+    }
+
     if(method=="uniform"){
-        sum = uniform_generate(seed, numberOfPoints);
+        sum = uniform_generate(seed, numberOfPoints, outFile, outFile2);
     }
     else if(method=="cluster"){
-        sum = cluster_generate(seed, numberOfPoints);
+        sum = cluster_generate(seed, numberOfPoints, outFile, outFile2);
     }
 
 

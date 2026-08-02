@@ -16,3 +16,17 @@ Method: cluster, Seed: 482349034, Number Of Points: 10000000, Sum: 10008.848140
 ❯ time ./harversine_generator uniform 482349034 10000000
 Method: uniform, Seed: 482349034, Number Of Points: 10000000, Sum: 10009.347106
 ./harversine_generator uniform 482349034 10000000  14.93s user 3.13s system 103% cpu 17.401 total
+
+
+----- json parser
+❯ ./a.out cluster 4343543534453 10000000
+Method: cluster, Seed: 4343543534453, Number of Points: 10000000, Sum: 4915.93
+
+❯ ./a.out points.json haversines.txt
+Input Size: 1095311195
+Pair Count: 10000000
+Sum: 4915.93
+Validation
+Reference Sum: 4915.93
+Difference Sum: 0
+./a.out points.json haversines.txt  8.52s user 2.10s system 99% cpu 10.628 total

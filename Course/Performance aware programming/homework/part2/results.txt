@@ -7,6 +7,14 @@ Method: cluster, Seed: 482349034, Number of Points: 10000000, Sum: 5021.37
 Method: uniform, Seed: 482349034, Number of Points: 10000000, Sum: 10009.3
 ./gen uniform 482349034 10000000  19.02s user 2.37s system 99% cpu 21.425 total
 
+echo %time%
+20:52:50.11
+
+gen.exe cluster 38793478934 10000000
+Method: cluster, Seed: 138773270, Number of Points: 10000000, Sum: 4968.98
+
+echo %time%
+20:54:00.70
 
 -------go 
 ❯ time ./harversine_generator cluster 482349034 10000000
@@ -30,3 +38,32 @@ Validation
 Reference Sum: 4915.93
 Difference Sum: 0
 ./a.out points.json haversines.txt  8.52s user 2.10s system 99% cpu 10.628 total
+
+--linux
+❯ ./proc_linux points.json haversines.txt
+
+Total time: 13186.8315ms (CPU freq 3008285860)
+Read Arg: 3630  (0.0000%)
+Read Json File: 7380777224  (18.6056%)
+Parse Json: 20569492679  (51.8518%)
+Compute Harversine: 5642269741  (14.2231%)
+Read Values File: 1792568294  (4.5187%)
+Parse Verify  Answers: 4206421874  (10.6036%)
+
+--windows
+Total time: 30615.8455ms (CPU freq 2994357920)
+Read Arg: 1650  (0.0000%)
+Read Json File: 1258016582  (1.3723%)
+Parse Json: 70041865004  (76.4025%)
+Compute Harversine: 2230893016  (2.4335%)
+Read Values File: 505386224  (0.5513%)
+Parse Verify  Answers: 17606776666  (19.2057%)
+
+-- linux macros
+
+Total time: 10812.2677ms (CPU freq 2994547970)
+points.json: 4070818052  (12.5728%)
+processJson: 18705046303  (57.7711%)
+computeHarvensineAndSum: 4638397007  (14.3258%)
+haversines.txt: 465630043  (1.4381%)
+parseAndVerifyResult: 4105950106  (12.6814%)

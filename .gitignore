@@ -1,2 +1,4 @@
 *.out
 computer_enhance/
+*.exe
+*.rdi

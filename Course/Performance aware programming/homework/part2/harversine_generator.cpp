@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <random>
-#include <threads.h>
+#include <thread>
 #include <iomanip>
 
 /* Casey's Code */
@@ -174,8 +174,8 @@ int main(int argc, char* argv[])
     }
 
     std::string method = argv[1];
-    long seed = std::stol(argv[2]);
-    long numberOfPoints = std::stol(argv[3]);
+    long seed = std::stoll(argv[2]);
+    long numberOfPoints = std::stoll(argv[3]);
 
     double sum = 0;
 

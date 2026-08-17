@@ -1,6 +1,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <system_error>
 #include <algorithm>
@@ -9,7 +10,9 @@
 #include <random>
 #include <threads.h>
 #include <iomanip>
-#include "platform_metrics.cpp"
+
+#include "timer_profile.cpp"
+
 /* Casey's Code */
 typedef double f64;
 typedef uint64_t u64;
@@ -66,6 +69,8 @@ struct Pairs{
 };
 
 FileContent readFile(const char* filename) {
+    BlockFunction(filename);
+    
     FileContent result = {};
 
     FILE* file = fopen(filename, "rb");
@@ -105,7 +110,8 @@ double ParseNumber(char *&at) {
 
 void processJson(const FileContent& jsonContent, Pairs* pairs, int numberOfPairs, int& actualPairs) {
     //std::cout<<"heel"<<std::endl;
-
+    TimerFunction;
+    
     char *at = jsonContent.data;
 
     SkipUntil(at, '[');
@@ -134,6 +140,8 @@ void processJson(const FileContent& jsonContent, Pairs* pairs, int numberOfPairs
 }
 
 double computeHarvensineAndSum(const Pairs* pairs, int numberOfPairs) {
+    TimerFunction;
+    
     double sum = 0;
     double mul = 1/(double)numberOfPairs;
     double earthRadius = 6372.8;
@@ -146,6 +154,8 @@ double computeHarvensineAndSum(const Pairs* pairs, int numberOfPairs) {
 }
 
 double parseAndVerifyResult(const FileContent &answersContent, int numberOfPairs) {
+
+    TimerFunction;
     char* at = answersContent.data;
     double sum = 0;
     double mul = 1/(double)numberOfPairs;
@@ -169,16 +179,17 @@ void printTimeProf(const char* name, u64 totaltime, u64 start, u64 end) {
 
 int main(int argc, char* argv[]){
 
-    u64 ProfBegin=0;
-    u64 ProfRead=0;
-    u64 ProfWholeFileJson=0;
-    u64 ProfWholeFileValues=0;
-    u64 ProfParseJson=0;
-    u64 ProfComputeHarversine=0;
-    u64 ProfParseAnswers=0;
-    u64 ProfEnd=0;
+    StartProfile();
+    // u64 ProfBegin=0;
+    // u64 ProfRead=0;
+    // u64 ProfWholeFileJson=0;
+    // u64 ProfWholeFileValues=0;
+    // u64 ProfParseJson=0;
+    // u64 ProfComputeHarversine=0;
+    // u64 ProfParseAnswers=0;
+    // u64 ProfEnd=0;
 
-    ProfBegin = ReadCPUTimer();
+   // ProfBegin = ReadCPUTimer();
 
     if(argc <2 || argc >3) {
         std::cerr << "Usage: " << argv[0] << " <Json File> <Optional: Answers File>" << std::endl;
@@ -188,22 +199,22 @@ int main(int argc, char* argv[]){
     std::string json_file = argv[1];
     //std::string answers_file = (argc == 3) ? argv[2] : "";
 
-    ProfRead = ReadCPUTimer();
+//ProfRead = ReadCPUTimer();
     FileContent jsonContent = readFile(json_file.c_str());
     if(jsonContent.data == NULL) {
         std::cerr << "Error: Could not read JSON file " << json_file << std::endl;
         return 1;
     }
-    ProfWholeFileJson = ReadCPUTimer();
+   // ProfWholeFileJson = ReadCPUTimer();
 
     constexpr size_t MinBytesPerPair = sizeof(Pairs); // 32 bytes
     int estimatedPairs = jsonContent.size / MinBytesPerPair;
     int actualPairs = 0;
     Pairs* pairs = new Pairs[estimatedPairs];
     processJson(jsonContent, pairs, estimatedPairs, actualPairs);
-    ProfParseJson = ReadCPUTimer();
+   // ProfParseJson = ReadCPUTimer();
     double sum = computeHarvensineAndSum(pairs, actualPairs);
-    ProfComputeHarversine = ReadCPUTimer();
+   // ProfComputeHarversine = ReadCPUTimer();
 
     //std::cout<<"Input Size: "<<jsonContent.size<<"\n"<<"Pair Count: "<<actualPairs<<"\n"<<"Sum: "<<sum<<"\n";
 
@@ -218,27 +229,29 @@ int main(int argc, char* argv[]){
             std::cerr << "Error: Could not read answers file " << answers_file << std::endl;
             return 1;
         }
-        ProfWholeFileValues = ReadCPUTimer();
+       // ProfWholeFileValues = ReadCPUTimer();
 
         double actualSum = parseAndVerifyResult(answersContent, actualPairs);
-        ProfParseAnswers = ReadCPUTimer();
+       // ProfParseAnswers = ReadCPUTimer();
         //std::cout << "Validation\n" << "Reference Sum: " << actualSum << "\nDifference Sum: " << actualSum - sum << "\n";
         free(answersContent.data);
         answersContent = {};
     }
-    ProfEnd = ReadCPUTimer();
+    // ProfEnd = ReadCPUTimer();
 
-    u64 totaltime = ProfEnd - ProfBegin;
-    u64 guessedCPUFreq = EstimateCPUTimerFreq();
-    if(guessedCPUFreq)
-    {
-        printf("\nTotal time: %0.4fms (CPU freq %llu)\n", 1000.0 * (f64)totaltime / (f64)guessedCPUFreq, guessedCPUFreq);
-    }
+    // u64 totaltime = ProfEnd - ProfBegin;
+    // u64 guessedCPUFreq = EstimateCPUTimerFreq();
+    // if(guessedCPUFreq)
+    // {
+    //     printf("\nTotal time: %0.4fms (CPU freq %llu)\n", 1000.0 * (f64)totaltime / (f64)guessedCPUFreq, guessedCPUFreq);
+    // }
 
-    printTimeProf("Read Arg", totaltime, ProfBegin, ProfRead);
-    printTimeProf("Read Json File", totaltime, ProfRead, ProfWholeFileJson);
-    printTimeProf("Parse Json", totaltime, ProfWholeFileJson, ProfParseJson);
-    printTimeProf("Compute Harversine", totaltime, ProfParseJson, ProfComputeHarversine);
-    printTimeProf("Read Values File", totaltime, ProfComputeHarversine, ProfWholeFileValues);
-    printTimeProf("Parse Verify  Answers", totaltime, ProfWholeFileValues, ProfParseAnswers);
+    // printTimeProf("Read Arg", totaltime, ProfBegin, ProfRead);
+    // printTimeProf("Read Json File", totaltime, ProfRead, ProfWholeFileJson);
+    // printTimeProf("Parse Json", totaltime, ProfWholeFileJson, ProfParseJson);
+    // printTimeProf("Compute Harversine", totaltime, ProfParseJson, ProfComputeHarversine);
+    // printTimeProf("Read Values File", totaltime, ProfComputeHarversine, ProfWholeFileValues);
+    // printTimeProf("Parse Verify  Answers", totaltime, ProfWholeFileValues, ProfParseAnswers);
+
+    StopProfile();
 }

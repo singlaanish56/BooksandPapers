@@ -11,7 +11,8 @@
 #include <threads.h>
 #include <iomanip>
 
-#include "timer_profile.cpp"
+//#include "my_timer_profile.cpp"
+#include "casey_recursive_timer.cpp"
 
 /* Casey's Code */
 typedef double f64;
@@ -69,7 +70,7 @@ struct Pairs{
 };
 
 FileContent readFile(const char* filename) {
-    BlockFunction(filename);
+    TimeFunction;
     
     FileContent result = {};
 
@@ -110,52 +111,61 @@ double ParseNumber(char *&at) {
 
 void processJson(const FileContent& jsonContent, Pairs* pairs, int numberOfPairs, int& actualPairs) {
     //std::cout<<"heel"<<std::endl;
-    TimerFunction;
+    TimeFunction;
     
     char *at = jsonContent.data;
 
-    SkipUntil(at, '[');
-    for(int i=0;i<numberOfPairs;i++)
     {
-        if(*at == ']') break;
-        SkipUntil(at, ':');
-        pairs[i].x0 = ParseNumber(at);
-
-        SkipUntil(at, ':');
-        pairs[i].y0 = ParseNumber(at);
-
-        SkipUntil(at, ':');
-        pairs[i].x1 = ParseNumber(at);
-
-        SkipUntil(at, ':');
-        pairs[i].y1 = ParseNumber(at);
-
-
-        actualPairs++;
-        SkipUntil(at, '}');
-        SkipWhitespace(at);
-
-        if(*at==',') ++at;
+        //BlockFunction("processJson for loop");
+        TimeBlock("processJson for loop");
+        SkipUntil(at, '[');
+        for(int i=0;i<numberOfPairs;i++)
+        {
+            if(*at == ']') break;
+            SkipUntil(at, ':');
+            pairs[i].x0 = ParseNumber(at);
+    
+            SkipUntil(at, ':');
+            pairs[i].y0 = ParseNumber(at);
+    
+            SkipUntil(at, ':');
+            pairs[i].x1 = ParseNumber(at);
+    
+            SkipUntil(at, ':');
+            pairs[i].y1 = ParseNumber(at);
+    
+    
+            actualPairs++;
+            SkipUntil(at, '}');
+            SkipWhitespace(at);
+    
+            if(*at==',') ++at;
+        }
     }
 }
 
 double computeHarvensineAndSum(const Pairs* pairs, int numberOfPairs) {
-    TimerFunction;
+    //TimerFunction;
+    TimeFunction;
     
     double sum = 0;
     double mul = 1/(double)numberOfPairs;
     double earthRadius = 6372.8;
+    
     for(int i=0;i<numberOfPairs;i++) {
         double haversineDistance = ReferenceHaversine(pairs[i].x0, pairs[i].y0, pairs[i].x1, pairs[i].y1, earthRadius);
         sum+=(mul*haversineDistance);
     }
+    
 
     return sum;
 }
 
 double parseAndVerifyResult(const FileContent &answersContent, int numberOfPairs) {
 
-    TimerFunction;
+    //TimerFunction;
+    TimeFunction;
+    
     char* at = answersContent.data;
     double sum = 0;
     double mul = 1/(double)numberOfPairs;
@@ -179,7 +189,8 @@ void printTimeProf(const char* name, u64 totaltime, u64 start, u64 end) {
 
 int main(int argc, char* argv[]){
 
-    StartProfile();
+    //StartProfile();
+    BeginProfile();
     // u64 ProfBegin=0;
     // u64 ProfRead=0;
     // u64 ProfWholeFileJson=0;
@@ -253,5 +264,6 @@ int main(int argc, char* argv[]){
     // printTimeProf("Read Values File", totaltime, ProfComputeHarversine, ProfWholeFileValues);
     // printTimeProf("Parse Verify  Answers", totaltime, ProfWholeFileValues, ProfParseAnswers);
 
-    StopProfile();
+    //End();
+    EndAndPrintProfile();
 }

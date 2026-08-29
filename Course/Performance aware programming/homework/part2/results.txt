@@ -67,3 +67,25 @@ processJson: 18705046303  (57.7711%)
 computeHarvensineAndSum: 4638397007  (14.3258%)
 haversines.txt: 465630043  (1.4381%)
 parseAndVerifyResult: 4105950106  (12.6814%)
+
+-- linux for the loops 
+❯ ./proc_linux points.json haversines.txt
+
+Total time: 12032.0574ms (CPU freq 2994600930)
+points.json: 7389706636  (20.5092%)
+processJson for loop: 18111960134  (50.2674%)
+processJson: 18111961934  (50.2674%)
+computeHarvensineAndSum: 5763075090  (15.9947%)
+haversines.txt: 631234680  (1.7519%)
+parseAndVerifyResult: 3760569419  (10.4370%)
+
+-- casey's recursive profiler
+ ❯ ./proc_linux points.json haversines.txt
+
+Total time: 11739.5899ms (CPU freq 2997232340)
+points.json: 6592151835  (18.7350%)
+processJson for loop: 18488074620  (52.5434%)
+processJson: 18488076690  (52.5434%)
+computeHarvensineAndSum: 5431999499  (15.4378%)
+haversines.txt: 635871121  (1.8072%)
+parseAndVerifyResult: 3639874996  (10.3446%)

@@ -11,6 +11,10 @@
 #include <threads.h>
 #include <iomanip>
 
+#define ArrayCount(Array) (sizeof(Array)/sizeof((Array)[0]))
+
+#define PROFILER 1
+#include "platform_metrics.cpp"
 //#include "my_timer_profile.cpp"
 #include "casey_recursive_timer.cpp"
 
@@ -121,6 +125,7 @@ void processJson(const FileContent& jsonContent, Pairs* pairs, int numberOfPairs
         SkipUntil(at, '[');
         for(int i=0;i<numberOfPairs;i++)
         {
+            //TimeBlock("processJson for each index in loop");
             if(*at == ']') break;
             SkipUntil(at, ':');
             pairs[i].x0 = ParseNumber(at);
@@ -153,6 +158,7 @@ double computeHarvensineAndSum(const Pairs* pairs, int numberOfPairs) {
     double earthRadius = 6372.8;
     
     for(int i=0;i<numberOfPairs;i++) {
+        //TimeBlock("haversine sum for each index in loop");
         double haversineDistance = ReferenceHaversine(pairs[i].x0, pairs[i].y0, pairs[i].x1, pairs[i].y1, earthRadius);
         sum+=(mul*haversineDistance);
     }
@@ -171,6 +177,7 @@ double parseAndVerifyResult(const FileContent &answersContent, int numberOfPairs
     double mul = 1/(double)numberOfPairs;
 
     for(int i=0;i<numberOfPairs;i++) {
+        //TimeBlock("verify for each index in loop");
         SkipWhitespace(at);
         double haversineDistance = ParseNumber(at);
         sum+=(mul*haversineDistance);
@@ -184,7 +191,7 @@ double parseAndVerifyResult(const FileContent &answersContent, int numberOfPairs
 void printTimeProf(const char* name, u64 totaltime, u64 start, u64 end) {
     u64 duration = end - start;
     f64 percent = 100.0 * (f64)duration / (f64)totaltime;
-    printf("%s: %llu  (%0.4f%%)\n", name, duration, percent);
+    printf("%s: %lu  (%0.4f%%)\n", name, duration, percent);
 }
 
 int main(int argc, char* argv[]){

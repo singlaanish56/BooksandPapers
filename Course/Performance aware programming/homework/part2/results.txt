@@ -89,3 +89,29 @@ processJson: 18488076690  (52.5434%)
 computeHarvensineAndSum: 5431999499  (15.4378%)
 haversines.txt: 635871121  (1.8072%)
 parseAndVerifyResult: 3639874996  (10.3446%)
+
+-- switchable profiler with the on
+❯ ./proc_linux points.json haversines.txt
+
+Total time: 11372.2380ms (CPU freq 2994575680)
+  readFile[2]: 6652162019 (19.53%)
+  processJson[1]: 120 (0.00%, 52.66% w/children)
+  processJson for loop[1]: 17934929010 (52.66%)
+  computeHarvensineAndSum[1]: 5306802900 (15.58%)
+  parseAndVerifyResult[1]: 3787188902 (11.12%)
+
+--switchable profiler on with the timer in the every index in the loop
+Total time: 11959.7233ms (CPU freq 2994632570)
+  readFile[2]: 4659686069 (13.01%)
+  processJson[1]: 150 (0.00%, 54.48% w/children)
+  processJson for loop[1]: 390292829 (1.09%, 54.48% w/children)
+  processJson for each index in loop[10000001]: 19122540183 (53.39%)
+  computeHarvensineAndSum[1]: 534937452 (1.49%, 19.24% w/children)
+  haversine sum for each index in loop[10000000]: 6357269958 (17.75%)
+  parseAndVerifyResult[1]: 359405243 (1.00%, 12.17% w/children)
+  verify for each index in loop[10000000]: 4000626127 (11.17%)
+  
+-- switchable profiler with the off
+❯ ./proc_linux points.json haversines.txt
+
+Total time: 11478.2390ms (CPU freq 2994585900)

@@ -14,11 +14,18 @@
    LISTING 85
    ======================================================================== */
 
-#include "platform_metrics.cpp"
+
 #include <cstdint>
 
 typedef uint32_t u32 ;
 typedef double f64;
+
+#ifndef PROFILER
+#define PROFILER 0
+#endif
+
+#if PROFILER
+
 
 struct profile_anchor
 {
@@ -29,14 +36,7 @@ struct profile_anchor
     char const *Label;
 };
 
-struct profiler
-{
-    profile_anchor Anchors[4096];
-    
-    u64 StartTSC;
-    u64 EndTSC;
-};
-static profiler GlobalProfiler;
+profile_anchor GlobalProfileAnchors[4096];
 static u32 GlobalProfilerParent;
 
 struct profile_block
@@ -48,7 +48,7 @@ struct profile_block
         AnchorIndex = AnchorIndex_;
         Label = Label_;
         
-        profile_anchor *Anchor = GlobalProfiler.Anchors + AnchorIndex;
+        profile_anchor *Anchor = GlobalProfileAnchors + AnchorIndex;
         OldTSCElapsedAtRoot = Anchor->TSCElapsedAtRoot;
         
         GlobalProfilerParent = AnchorIndex;
@@ -60,8 +60,8 @@ struct profile_block
         u64 Elapsed = ReadCPUTimer() - StartTSC;
         GlobalProfilerParent = ParentIndex;
     
-        profile_anchor *Parent = GlobalProfiler.Anchors + ParentIndex;
-        profile_anchor *Anchor = GlobalProfiler.Anchors + AnchorIndex;
+        profile_anchor *Parent = GlobalProfileAnchors + ParentIndex;
+        profile_anchor *Anchor = GlobalProfileAnchors + AnchorIndex;
         
         Parent->TSCElapsedChildren += Elapsed;
         Anchor->TSCElapsedAtRoot = OldTSCElapsedAtRoot + Elapsed;
@@ -85,13 +85,13 @@ struct profile_block
 #define NameConcat2(A, B) A##B
 #define NameConcat(A, B) NameConcat2(A, B)
 #define TimeBlock(Name) profile_block NameConcat(Block, __LINE__)(Name, __COUNTER__ + 1);
-#define TimeFunction TimeBlock(__func__)
+
 
 static void PrintTimeElapsed(u64 TotalTSCElapsed, profile_anchor *Anchor)
 {
     u64 TSCElapsedSelf = Anchor->TSCElapsed - Anchor->TSCElapsedChildren;
     f64 Percent = 100.0 * ((f64)TSCElapsedSelf / (f64)TotalTSCElapsed);
-    printf("  %s[%llu]: %llu (%.2f%%", Anchor->Label, Anchor->HitCount, TSCElapsedSelf, Percent);
+    printf("  %s[%lu]: %lu (%.2f%%", Anchor->Label, Anchor->HitCount, TSCElapsedSelf, Percent);
     if(Anchor->TSCElapsedAtRoot != TSCElapsedSelf)
     {
         f64 PercentWithChildren = 100.0 * ((f64)Anchor->TSCElapsedAtRoot / (f64)TotalTSCElapsed);
@@ -99,6 +99,35 @@ static void PrintTimeElapsed(u64 TotalTSCElapsed, profile_anchor *Anchor)
     }
     printf(")\n");
 }
+
+static void PrintAnchorData(u64 TotalCPUElapsed)
+{
+    for(u32 AnchorIndex = 0; AnchorIndex < ArrayCount(GlobalProfileAnchors); ++AnchorIndex)
+    {
+        profile_anchor *Anchor = GlobalProfileAnchors + AnchorIndex;
+        if(Anchor->TSCElapsed)
+        {
+            PrintTimeElapsed(TotalCPUElapsed, Anchor);
+        }
+    }
+}
+
+#else
+
+#define TimeBlock(...)
+#define PrintAnchorData(...)
+
+#endif
+
+struct profiler
+{
+    u64 StartTSC;
+    u64 EndTSC;
+};
+static profiler GlobalProfiler;
+
+
+#define TimeFunction TimeBlock(__func__)
 
 static void BeginProfile(void)
 {
@@ -114,16 +143,9 @@ static void EndAndPrintProfile()
     
     if(CPUFreq)
     {
-        printf("\nTotal time: %0.4fms (CPU freq %llu)\n", 1000.0 * (f64)TotalCPUElapsed / (f64)CPUFreq, CPUFreq);
+        printf("\nTotal time: %0.4fms (CPU freq %lu)\n", 1000.0 * (f64)TotalCPUElapsed / (f64)CPUFreq, CPUFreq);
     }
     
-    for(u32 AnchorIndex = 0; AnchorIndex < ArrayCount(GlobalProfiler.Anchors); ++AnchorIndex)
-    {
-        profile_anchor *Anchor = GlobalProfiler.Anchors + AnchorIndex;
-        if(Anchor->TSCElapsed)
-        {
-            PrintTimeElapsed(TotalCPUElapsed, Anchor);
-        }
-    }
+    PrintAnchorData(TotalCPUElapsed);
 }
         

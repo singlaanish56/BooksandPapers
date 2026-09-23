@@ -115,3 +115,11 @@ Total time: 11959.7233ms (CPU freq 2994632570)
 ❯ ./proc_linux points.json haversines.txt
 
 Total time: 11478.2390ms (CPU freq 2994585900)
+
+----size
+Total time: 12195.7530ms (CPU freq 2994699300)
+  readFile[2]: 6882626159 (18.84% 1257.472MB, 0.53GB/s))
+  processJson[1]: 67170 (0.00%, 52.11% w/children)
+  processJson for loop[1]: 19032269671 (52.11%)
+  computeHarvensineAndSum[1]: 6331643372 (17.34% 305.176MB, 0.14GB/s))
+  parseAndVerifyResult[1]: 3890067390 (10.65%)

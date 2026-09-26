@@ -8,6 +8,21 @@ enum tester_state: u32{
     TesterState_Finished
 };
 
+enum allocation_type: u32 {
+    AllocationType_None,
+    AllocationType_Malloc,
+    AllocationType_Count
+};
+
+struct FileContent{
+    
+    char* data;
+    size_t size;
+    char* name;  
+    allocation_type alloc;
+};
+
+
 struct tester_result{
     u64 Repetitions;
     u64 TotalTime;
@@ -27,6 +42,32 @@ struct repetition_tester {
     u64 TimeTrackerEnd;
     u64 ByteCount;
 };
+
+static char const *GetAllocationType(allocation_type alloc){
+    char const *Result;
+    switch(alloc){
+        case AllocationType_None: Result= ""; break;
+        case AllocationType_Malloc: {Result="malloc"; break;}
+        default: Result="UNKNOWN"; break;
+    }
+    return Result;
+}
+
+static char*  Allocate(FileContent *file_data){
+    switch(file_data->alloc){
+        case AllocationType_None: return file_data->data;
+        case AllocationType_Malloc: return (char *) malloc(file_data->size);
+        default: return nullptr;
+    }
+}
+
+static void Deallocate(FileContent *file_data, char* buffer){
+    switch(file_data->alloc){
+        case AllocationType_None: break;
+        case AllocationType_Malloc: {free(buffer); break;}
+        default: break;
+    }
+}
 
 static void PrintTime(char const* print_label, f64 cpu_time, u64 cpu_freq, u64 bytes_read){
 
@@ -121,7 +162,7 @@ static bool isTesting(repetition_tester *tester){
 
         if((currentTime - tester->TimeTestStartedAt) > tester->TryForTime){
             tester->state = TesterState_Finished;
-            
+            printf("\n");
             PrintResults(tester->result, tester->CPUFreq, tester->ByteCount);
         }
     }

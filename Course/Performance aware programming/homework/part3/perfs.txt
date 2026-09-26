@@ -1,0 +1,67 @@
+---------------- read overhead pre malloc allocation ------------------------------
+ Performance counter stats for './a.out points.json':
+
+                 0      context-switches:u               #      0.0 cs/sec  cs_per_second
+                 0      cpu-migrations:u                 #      0.0 migrations/sec  migrations_per_second
+               135      page-faults:u                    #      1.3 faults/sec  page_faults_per_second
+         104867.33 msec task-clock:u                     #      1.0 CPUs  CPUs_utilized
+             88786      branch-misses:u                  #      0.0 %  branch_miss_rate         (50.00%)
+         545499875      branches:u                       #      5.2 M/sec  branch_frequency     (66.68%)
+        3437849981      cpu-cycles:u                     #      0.0 GHz  cycles_frequency       (66.67%)
+        3159945844      instructions:u                   #      0.9 instructions  insn_per_cycle  (66.67%)
+          30637811      stalled-cycles-frontend:u        #     0.01 frontend_cycles_idle        (66.68%)
+
+     104.979307615 seconds time elapsed
+
+       0.915899000 seconds user
+     104.052591000 seconds sys
+
+    Performance counter stats for './a.out points.json':
+    
+                135      page-faults:u
+                135      minor-faults:u
+                    0      major-faults:u
+    
+        69.397178520 seconds time elapsed
+    
+        0.399984000 seconds user
+        68.993263000 seconds sys
+
+    Samples: 5K of event 'page-faults', Event count (approx.): 268310
+        Children      Self  Command  Shared Object         Symbol
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] entry_SYSCALL_64_after_hwframe
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] do_syscall_64
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] x64_sys_call
+        +   99.94%    99.94%  a.out    [kernel.kallsyms]     [k] rep_movs_alternative
+        +   99.94%     0.00%  a.out    a.out                 [.] _start
+        +   99.94%     0.00%  a.out    libc.so.6             [.] __libc_start_main_impl (inlined)
+        +   99.94%     0.00%  a.out    libc.so.6             [.] call_init (inlined)
+        +   99.94%     0.00%  a.out    libc.so.6             [.] __libc_start_call_main
+        +   99.94%     0.00%  a.out    a.out                 [.] main
+        +   99.94%     0.00%  a.out    a.out                 [.] ReadFRead(repetition_tester*, FileContent*)
+        +   99.94%     0.00%  a.out    libc.so.6             [.] _IO_fread
+        +   99.94%     0.00%  a.out    libc.so.6             [.] _IO_acquire_lock_fct (inlined)
+        +   99.94%     0.00%  a.out    libc.so.6             [.] _IO_file_xsgetn
+        +   99.94%     0.00%  a.out    libc.so.6             [.] __libc_read (inlined)
+        +   99.94%     0.00%  a.out    libc.so.6             [.] __syscall_cancel
+        +   99.94%     0.00%  a.out    libc.so.6             [.] __internal_syscall_cancel (inlined)
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] __x64_sys_read
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] ksys_read
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] vfs_read
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] ext4_file_read_iter
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] generic_file_read_iter
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] filemap_read
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] copy_page_to_iter
+        +   99.94%     0.00%  a.out    [kernel.kallsyms]     [.] _copy_to_iter
+
+    ./a.out: Interrupt
+    
+        Performance counter stats for './a.out points.json':
+        
+                    487651      cache-references:u
+                    265382      cache-misses:u
+        
+            47.922956353 seconds time elapsed
+        
+            0.411964000 seconds user
+            47.503882000 seconds sys

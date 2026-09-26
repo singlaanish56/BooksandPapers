@@ -1,6 +1,7 @@
 
 
 
+#include <cstdint>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -9,6 +10,7 @@
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof(Array[0]))
 
+typedef uint8_t u8;
 typedef uint64_t u64;
 typedef uint32_t u32;
 typedef double f64;
@@ -24,7 +26,7 @@ struct test_function{
 test_function test_functions[] = {
     { "fread", ReadFRead },
     { "istream", ReadIStream },
-    { "posix", ReadPOSIX },
+    { "posix", ReadPOSIX }
 };
 
 int main(int argc, char* argv[]){
@@ -43,16 +45,25 @@ int main(int argc, char* argv[]){
         file_data.data = (char *) malloc(file_data.size);
             
         if(file_data.data){
-            repetition_tester testers[ArrayCount(test_functions)] = {};
+            repetition_tester testers[ArrayCount(test_functions)][AllocationType_Count] = {};
             for(;;){
                 // loop over the functions of that are supposed to be tested
                 for(u32 i = 0; i < ArrayCount(test_functions); ++i) {
-                    test_function func = test_functions[i];
-                    repetition_tester *tester = testers + i;
-                    
-                    printf("\n ******* %s ******* \n", func.Name);
-                    InitializeParamForFunc(tester, file_data.size);
-                    func.Func(tester, &file_data);
+
+                    for(u32 j=0;j<AllocationType_Count;++j){
+
+                        file_data.alloc = (allocation_type)j;
+                        test_function func = test_functions[i];
+                        repetition_tester *tester = &testers[i][j];
+                        
+                        printf("\n--- %s%s%s ---\n",
+                               GetAllocationType(file_data.alloc),
+                               file_data.alloc ? " + " : "",
+                               func.Name);
+                        InitializeParamForFunc(tester, file_data.size);
+                        func.Func(tester, &file_data);
+                    }
+
                 }
             }
         }

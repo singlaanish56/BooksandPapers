@@ -37,6 +37,7 @@ static u64 ReadOSTimer(void)
 
 #include <x86intrin.h>
 #include <sys/time.h>
+#include <sys/resource.h>
 
 static u64 GetOSTimerFreq(void)
 {
@@ -54,6 +55,16 @@ static u64 ReadOSTimer(void)
 	return Result;
 }
 
+static u64 ReadOSPageFault(void)
+{
+
+    struct rusage Usage;
+    getrusage(RUSAGE_SELF, &Usage);
+
+    u64 Result = Usage.ru_minflt+ Usage.ru_majflt;
+    
+    return Result;
+}
 #endif
 
 /* NOTE(casey): This does not need to be "inline", it could just be "static"

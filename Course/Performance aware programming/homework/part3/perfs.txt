@@ -65,3 +65,75 @@
         
             0.411964000 seconds user
             47.503882000 seconds sys
+
+---------------- read overhead per func malloc allocation ------------------------------
+    Performance counter stats for './a.out points.json':
+    
+                    0      context-switches:u               #      0.0 cs/sec  cs_per_second
+                    0      cpu-migrations:u                 #      0.0 migrations/sec  migrations_per_second
+                180      page-faults:u                    #      1.7 faults/sec  page_faults_per_second
+            104930.42 msec task-clock:u                     #      1.0 CPUs  CPUs_utilized
+                58482      branch-misses:u                  #      0.0 %  branch_miss_rate         (50.01%)
+            432874138      branches:u                       #      4.1 M/sec  branch_frequency     (66.67%)
+            2687058634      cpu-cycles:u                     #      0.0 GHz  cycles_frequency       (66.64%)
+            2413529102      instructions:u                   #      0.9 instructions  insn_per_cycle  (66.67%)
+            23210785      stalled-cycles-frontend:u        #     0.01 frontend_cycles_idle        (66.68%)
+    
+        105.072806569 seconds time elapsed
+    
+        0.704314000 seconds user
+        104.326556000 seconds sys
+
+    ^C./a.out: Interrupt
+    
+    Performance counter stats for './a.out points.json':
+    
+                210      page-faults:u
+                210      minor-faults:u
+                    0      major-faults:u
+    
+        135.610485114 seconds time elapsed
+    
+        0.704298000 seconds user
+        134.837106000 seconds sys
+
+    Samples: 198K of event 'page-faults', Event count (approx.): 17966001
+    Children      Self  Command  Shared Object         Symbol
+    +  100.00%     0.00%  a.out    a.out                 [.] _start
+    +  100.00%     0.00%  a.out    libc.so.6             [.] __libc_start_main_impl (inlined)
+    +  100.00%     0.00%  a.out    libc.so.6             [.] call_init (inlined)
+    +  100.00%     0.00%  a.out    libc.so.6             [.] __libc_start_call_main
+    +  100.00%     0.00%  a.out    a.out                 [.] main
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] entry_SYSCALL_64_after_hwframe
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] do_syscall_64
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] x64_sys_call
+    +  100.00%   100.00%  a.out    [kernel.kallsyms]     [k] rep_movs_alternative
+    +  100.00%     0.00%  a.out    libc.so.6             [.] __libc_read (inlined)
+    +  100.00%     0.00%  a.out    libc.so.6             [.] __syscall_cancel
+    +  100.00%     0.00%  a.out    libc.so.6             [.] __internal_syscall_cancel (inlined)
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] __x64_sys_read
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] ksys_read
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] vfs_read
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] ext4_file_read_iter
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] generic_file_read_iter
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] filemap_read
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] copy_page_to_iter
+    +  100.00%     0.00%  a.out    [kernel.kallsyms]     [.] _copy_to_iter
+    +   41.79%     0.00%  a.out    a.out                 [.] ReadIStream(repetition_tester*, FileContent*)
+    +   41.79%     0.00%  a.out    libstdc++.so.6.0.35   [.] std::istream::read(char*, long)
+    +   41.79%     0.00%  a.out    libstdc++.so.6.0.35   [.] std::basic_filebuf<char, std::char_traits<char> >::xsgetn(char*
+    +   41.79%     0.00%  a.out    libstdc++.so.6.0.35   [.] std::__basic_file<char>::xsgetn(char*, long)
+    +   32.84%     0.00%  a.out    a.out                 [.] ReadPOSIX(repetition_tester*, FileContent*)
+    +   25.37%     0.00%  a.out    a.out                 [.] ReadFRead(repetition_tester*, FileContent*)
+    +   25.37%     0.00%  a.out    libc.so.6             [.] _IO_fread
+
+
+    Performance counter stats for './a.out points.json':
+    
+                941761      cache-references:u
+                540436      cache-misses:u
+    
+        142.653724731 seconds time elapsed
+    
+        0.721910000 seconds user
+        141.851403000 seconds sys
